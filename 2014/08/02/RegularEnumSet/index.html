@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>usafchn&#39;s blog › JDK源码解读之RegularEnumSet</title>
+  <title>usafchn&#39;s Notes › JDK源码解读之RegularEnumSet</title>
   <meta name="author" content="usafchn">
   
   <meta name="description" content="Java C/C++ Algorithm">
@@ -12,14 +12,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <meta property="og:title" content="JDK源码解读之RegularEnumSet"/>
-  <meta property="og:site_name" content="usafchn&#39;s blog"/>
+  <meta property="og:site_name" content="usafchn&#39;s Notes"/>
 
   
     <meta property="og:image" content="undefined"/>
   
 
   <link href="/favicon.png" rel="icon">
-  <link rel="alternate" href="/atom.xml" title="usafchn&#39;s blog" type="application/atom+xml">
+  <link rel="alternate" href="/atom.xml" title="usafchn&#39;s Notes" type="application/atom+xml">
   <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
   
 </head>
@@ -27,7 +27,7 @@
 
 <body>
   <header id="header"><div class="meta inner">
-  <h1><a href="/">usafchn&#39;s blog</a></h1>
+  <h1><a href="/">usafchn&#39;s Notes</a></h1>
   <h2><a href="/">usafchn&#39;s tech blog</a></h2>
   <nav id="main-nav">
     <ul>
@@ -50,7 +50,7 @@
   
 
       
-      <time datetime="2014-08-02T05:42:49.000Z">2014 8月 2</time>
+      <time datetime="2014-08-02T05:42:49.000Z">2014/08/02</time>
       
     </header>
     <div class="entry">
@@ -59,7 +59,6 @@
 <p>今天做项目的时候偶然用到EnumSet，EnumSet平时不太常用，比较陌生，于是点进去看了下源码，发现这个类还是比较有意思的，首先EnumSet是个抽象类，当我们调用EnumSet提供的静态函数创建对象的时候，实际创建的是RegularEnumSet或者JumboEnumSet，前者对应枚举成员少于64个的情况，后者不设枚举成员数量上限，当枚举成员数量大于64时，EnumSet实际创建的对象是JumboEnumSet类型。由于我定义的枚举成员数明显没到64，于是很自然的点进RegularEnumSet继续一探究竟…</p>
 <a id="more"></a>
 
-<p>[TOC]</p>
 <h2 id="addAll()函数">addAll()函数</h2>
 <p>如果你调用EnumSet的静态函数allOf()函数，那么实际将会调用到的是RegularEnumSet中的addAll()函数，addAll()函数的实现只有一行：</p>
 <figure class="highlight Java"><table><tr><td class="gutter"><pre>1
@@ -80,7 +79,7 @@
 <p>回顾一下前面提到的表达式：</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre>1
 </pre></td><td class="code"><pre><span class="deletion">-1L &gt;&gt;&gt; -universe.length;</span>
-</pre></td></tr></table></figure><br>左边是一个long类型，-1L的补码表示是0xffffffffffffffff，并且&gt;&gt;&gt;是无符号右移，在右移的时候最高位补0；右边的”-universe.length”其实只有低6位有效，举个例子来说吧，假设length为5，那么-5在内存中的表示为0xfffffffb，取低6位有效，那么实际有效值是0x3b，换成十进制就是59，也就是把-1L右移59位，可见，表达式的结果正好是低5位全1，高位全0。<br><br>更一般地，当n处在[1..64]之间时，（-1L &gt;&gt;&gt; -n）的结果应该是低n位全1，高位全0。可见，这个结果正好满足RegularEnumSet的需要。<br><br>### 联想<br>知道了这个trick以后，其实它还有更多用途，比如可以这样：<br><br><figure class="highlight Java"><table><tr><td class="gutter"><pre>1
+</pre></td></tr></table></figure><br>左边是一个long类型，-1L的补码表示是0xffffffffffffffff，并且&gt;&gt;&gt;是无符号右移，在右移的时候最高位补0；右边的”-universe.length”其实只有低6位有效，举个例子来说吧，假设length为5，那么-5在内存中的表示为0xfffffffb，取低6位有效，那么实际有效值是0x3b，换成十进制就是59，也就是把-1L右移59位，可见，表达式的结果正好是低5位全1，高位全0。<br><br>更一般地，当n处在[1..64]之间时，（-1L &gt;&gt;&gt; -n）的结果应该是低n位全1，高位全0。可见，这个结果正好满足RegularEnumSet的需要。<br><br>### 联想<br><br>知道了这个trick以后，其实它还有更多用途，比如可以这样：<br><br><figure class="highlight Java"><table><tr><td class="gutter"><pre>1
 2
 3
 4
@@ -169,6 +168,11 @@ elements &= ~(<span class="number">1</span>L &lt;&lt; ((Enum)e).ordinal());
     <footer>
       <div class="alignleft">
       
+  
+  <div class="categories">
+    <a href="/categories/Java/">Java</a>
+  </div>
+
       
   
   <div class="tags">
